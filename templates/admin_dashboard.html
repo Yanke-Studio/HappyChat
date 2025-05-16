@@ -1,0 +1,510 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>乐聊 -- 管理员控制面板</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC9',
+                        neutral: {
+                            100: '#F5F7FA',
+                            200: '#E5E6EB',
+                            300: '#C9CDD4',
+                            400: '#86909C',
+                            500: '#4E5969',
+                            600: '#272E3B',
+                            700: '#1D2129',
+                        },
+                        danger: '#F53F3F',
+                        success: '#00B42A',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'custom': '0 4px 20px rgba(0, 0, 0, 0.08)',
+                        'hover': '0 8px 30px rgba(0, 0, 0, 0.12)',
+                    }
+                },
+            }
+        }
+    </script>
+</head>
+<body class="font-inter bg-neutral-100 min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-shield text-primary text-2xl"></i>
+                <h1 class="text-xl font-semibold text-neutral-700">管理员控制面板</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-neutral-600 flex items-center">
+                    <i class="fa fa-user-circle-o mr-1"></i>
+                    {{ admin_username }}
+                </span>
+                <a href="/admin/change_password" class="text-neutral-500 hover:text-primary transition-colors duration-200 flex items-center">
+                    <i class="fa fa-key mr-1"></i> 修改密码
+                </a>
+                <a href="/logout" class="text-neutral-500 hover:text-danger transition-colors duration-200 flex items-center">
+                    <i class="fa fa-sign-out mr-1"></i> 退出
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-grow container mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- 封禁管理 -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-custom overflow-hidden">
+                    <div class="p-4 bg-primary text-white flex items-center">
+                        <i class="fa fa-ban text-xl mr-2"></i>
+                        <h2 class="font-semibold text-lg">IP封禁管理</h2>
+                    </div>
+                    
+                    <div class="p-4">
+                        <form id="ban-form" class="space-y-3 mb-6">
+                            <div>
+                                <label for="ban-ip" class="block text-neutral-600 mb-1 text-sm">IP地址</label>
+                                <input 
+                                    type="text" 
+                                    id="ban-ip" 
+                                    class="w-full px-3 py-2 rounded-lg border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200 text-sm"
+                                    placeholder="例如: 192.168.1.1"
+                                    required
+                                >
+                            </div>
+                            <div>
+                                <label for="ban-reason" class="block text-neutral-600 mb-1 text-sm">封禁原因</label>
+                                <input 
+                                    type="text" 
+                                    id="ban-reason" 
+                                    class="w-full px-3 py-2 rounded-lg border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200 text-sm"
+                                    placeholder="请输入封禁原因"
+                                    required
+                                >
+                            </div>
+                            <button 
+                                type="submit" 
+                                class="w-full bg-danger hover:bg-danger/90 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center text-sm"
+                            >
+                                <i class="fa fa-lock mr-2"></i> 封禁IP
+                            </button>
+                        </form>
+                        
+                        <h3 class="font-medium text-neutral-700 mb-3 flex items-center">
+                            <i class="fa fa-list-ul mr-2 text-primary"></i> 封禁列表
+                        </h3>
+                        
+                        {% if bans %}
+                        <div class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+                            {% for ban in bans %}
+                            <div class="p-3 bg-neutral-50 rounded-lg border border-neutral-200 hover:border-primary/30 transition-all duration-200">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="font-medium text-neutral-700">{{ ban.ip }}</span>
+                                    <button 
+                                        class="unban-btn text-xs text-danger hover:text-danger/80 transition-colors duration-200"
+                                        data-ip="{{ ban.ip }}"
+                                    >
+                                        <i class="fa fa-unlock-alt mr-1"></i> 解除
+                                    </button>
+                                </div>
+                                <div class="text-sm text-neutral-600 mb-1">
+                                    <span class="text-neutral-500">原因:</span> {{ ban.reason }}
+                                </div>
+                                <div class="text-xs text-neutral-400">
+                                    <span class="text-neutral-500">封禁者:</span> {{ ban.admin }}
+                                </div>
+                                <div class="text-xs text-neutral-400">
+                                    <span class="text-neutral-500">时间:</span> {{ ban.timestamp }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center text-neutral-400 py-6">
+                            <i class="fa fa-check-circle-o text-3xl mb-2"></i>
+                            <p>暂无封禁记录</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 禁言管理 -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-custom overflow-hidden">
+                    <div class="p-4 bg-secondary text-white flex items-center">
+                        <i class="fa fa-mute text-xl mr-2"></i>
+                        <h2 class="font-semibold text-lg">用户禁言管理</h2>
+                    </div>
+                    
+                    <div class="p-4">
+                        <form id="mute-form" class="space-y-3 mb-6">
+                            <div>
+                                <label for="mute-target" class="block text-neutral-600 mb-1 text-sm">用户名/IP</label>
+                                <input 
+                                    type="text" 
+                                    id="mute-target" 
+                                    class="w-full px-3 py-2 rounded-lg border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200 text-sm"
+                                    placeholder="可以是用户名或IP地址"
+                                    required
+                                >
+                            </div>
+                            <div>
+                                <label for="mute-minutes" class="block text-neutral-600 mb-1 text-sm">禁言时间(分钟)</label>
+                                <input 
+                                    type="number" 
+                                    id="mute-minutes" 
+                                    class="w-full px-3 py-2 rounded-lg border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200 text-sm"
+                                    placeholder="例如: 60"
+                                    min="1"
+                                    value="60"
+                                    required
+                                >
+                            </div>
+                            <div>
+                                <label for="mute-reason" class="block text-neutral-600 mb-1 text-sm">禁言原因</label>
+                                <input 
+                                    type="text" 
+                                    id="mute-reason" 
+                                    class="w-full px-3 py-2 rounded-lg border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200 text-sm"
+                                    placeholder="请输入禁言原因"
+                                    required
+                                >
+                            </div>
+                            <button 
+                                type="submit" 
+                                class="w-full bg-secondary hover:bg-secondary/90 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center text-sm"
+                            >
+                                <i class="fa fa-microphone-slash mr-2"></i> 禁言用户
+                            </button>
+                        </form>
+                        
+                        <h3 class="font-medium text-neutral-700 mb-3 flex items-center">
+                            <i class="fa fa-list-ul mr-2 text-secondary"></i> 禁言列表
+                        </h3>
+                        
+                        {% if mutes %}
+                        <div class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+                            {% for mute in mutes %}
+                            <div class="p-3 bg-neutral-50 rounded-lg border border-neutral-200 hover:border-secondary/30 transition-all duration-200">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="font-medium text-neutral-700">{{ mute.target }}</span>
+                                    <button 
+                                        class="unmute-btn text-xs text-secondary hover:text-secondary/80 transition-colors duration-200"
+                                        data-target="{{ mute.target }}"
+                                    >
+                                        <i class="fa fa-microphone mr-1"></i> 解除
+                                    </button>
+                                </div>
+                                <div class="text-sm text-neutral-600 mb-1">
+                                    <span class="text-neutral-500">剩余时间:</span> {{ mute.remaining }}
+                                </div>
+                                <div class="text-sm text-neutral-600 mb-1">
+                                    <span class="text-neutral-500">原因:</span> {{ mute.reason }}
+                                </div>
+                                <div class="text-xs text-neutral-400">
+                                    <span class="text-neutral-500">操作人:</span> {{ mute.admin }}
+                                </div>
+                                <div class="text-xs text-neutral-400">
+                                    <span class="text-neutral-500">到期时间:</span> {{ mute.expires_at }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center text-neutral-400 py-6">
+                            <i class="fa fa-check-circle-o text-3xl mb-2"></i>
+                            <p>暂无禁言记录</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 聊天记录 -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-custom overflow-hidden h-full flex flex-col">
+                    <div class="p-4 bg-neutral-700 text-white flex items-center">
+                        <i class="fa fa-history text-xl mr-2"></i>
+                        <h2 class="font-semibold text-lg">聊天记录</h2>
+                    </div>
+                    
+                    <div class="p-4 flex-grow overflow-y-auto">
+                        <div class="text-sm text-neutral-500 mb-4">
+                            最近 {{ chat_history|length }} 条消息
+                        </div>
+                        
+                        {% if chat_history %}
+                        <div class="space-y-4">
+                            {% for msg in chat_history %}
+                            <div class="p-3 bg-neutral-50 rounded-lg border border-neutral-200 hover:border-neutral-300 transition-all duration-200">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="font-medium text-neutral-700">{{ msg.username }}</span>
+                                    <span class="text-xs text-neutral-400">{{ msg.timestamp }}</span>
+                                </div>
+                                <div class="text-neutral-600">
+                                    {{ msg.message }}
+                                </div>
+                                <div class="mt-2 text-right">
+                                    <button 
+                                        class="delete-msg-btn text-xs text-danger hover:text-danger/80 transition-colors duration-200"
+                                        data-index="{{ loop.index0 }}"
+                                    >
+                                        <i class="fa fa-trash-o mr-1"></i> 删除
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center text-neutral-400 py-6">
+                            <i class="fa fa-comments-o text-3xl mb-2"></i>
+                            <p>暂无聊天记录</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white py-4 border-t border-neutral-200 mt-8">
+        <div class="container mx-auto px-4 text-center text-neutral-500 text-sm">
+            <p>© 2025 乐聊 | 一个基于 Flask 和 SocketIO 的在线聊天系统</p>
+        </div>
+    </footer>
+
+    <!-- 操作结果提示框 -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-neutral-800 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-500 scale-0 opacity-0 z-50 flex items-center">
+        <i id="toast-icon" class="fa fa-check-circle mr-2"></i>
+        <span id="toast-message">操作成功</span>
+    </div>
+
+    <script>
+        // 显示提示框
+        function showToast(message, isSuccess = true) {
+            const toast = document.getElementById('toast');
+            const toastIcon = document.getElementById('toast-icon');
+            const toastMessage = document.getElementById('toast-message');
+            
+            toastMessage.textContent = message;
+            toastIcon.className = isSuccess ? 'fa fa-check-circle mr-2' : 'fa fa-exclamation-circle mr-2';
+            toast.className = isSuccess 
+                ? 'fixed bottom-6 right-6 bg-success text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-500 scale-100 opacity-100 z-50 flex items-center'
+                : 'fixed bottom-6 right-6 bg-danger text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-500 scale-100 opacity-100 z-50 flex items-center';
+            
+            setTimeout(() => {
+                toast.className = 'fixed bottom-6 right-6 bg-neutral-800 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-500 scale-0 opacity-0 z-50 flex items-center';
+            }, 3000);
+        }
+        
+        // 封禁IP
+        document.getElementById('ban-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const ip = document.getElementById('ban-ip').value.trim();
+            const reason = document.getElementById('ban-reason').value.trim();
+            
+            fetch('/admin/ban', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    'ip': ip,
+                    'reason': reason
+                }),
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message);
+                    // 刷新页面
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    showToast(data.message, false);
+                }
+            })
+            .catch(error => {
+                showToast('操作失败，请重试', false);
+                console.error('Error:', error);
+            });
+        });
+        
+        // 解除封禁
+        document.querySelectorAll('.unban-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const ip = this.getAttribute('data-ip');
+                
+                if (confirm(`确定要解除对 ${ip} 的封禁吗？`)) {
+                    fetch('/admin/unban', {
+                        method: 'POST',
+                        body: new URLSearchParams({
+                            'ip': ip
+                        }),
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast(data.message);
+                            // 刷新页面
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            showToast(data.message, false);
+                        }
+                    })
+                    .catch(error => {
+                        showToast('操作失败，请重试', false);
+                        console.error('Error:', error);
+                    });
+                }
+            });
+        });
+        
+        // 禁言用户
+        document.getElementById('mute-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const target = document.getElementById('mute-target').value.trim();
+            const minutes = document.getElementById('mute-minutes').value;
+            const reason = document.getElementById('mute-reason').value.trim();
+            
+            fetch('/admin/mute', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    'target': target,
+                    'minutes': minutes,
+                    'reason': reason
+                }),
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message);
+                    // 刷新页面
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    showToast(data.message, false);
+                }
+            })
+            .catch(error => {
+                showToast('操作失败，请重试', false);
+                console.error('Error:', error);
+            });
+        });
+        
+        // 解除禁言
+        document.querySelectorAll('.unmute-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const target = this.getAttribute('data-target');
+                
+                if (confirm(`确定要解除对 ${target} 的禁言吗？`)) {
+                    fetch('/admin/unmute', {
+                        method: 'POST',
+                        body: new URLSearchParams({
+                            'target': target
+                        }),
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast(data.message);
+                            // 刷新页面
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            showToast(data.message, false);
+                        }
+                    })
+                    .catch(error => {
+                        showToast('操作失败，请重试', false);
+                        console.error('Error:', error);
+                    });
+                }
+            });
+        });
+        
+        // 删除消息
+        document.querySelectorAll('.delete-msg-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const index = this.getAttribute('data-index');
+                const messageElement = this.closest('div');
+                const username = messageElement.querySelector('.font-medium').textContent;
+                const messagePreview = messageElement.querySelector('.text-neutral-600').textContent.substring(0, 20) + '...';
+                
+                if (confirm(`确定要删除 ${username} 的消息 "${messagePreview}" 吗？`)) {
+                    fetch('/admin/delete_message', {
+                        method: 'POST',
+                        body: new URLSearchParams({
+                            'index': index
+                        }),
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast(data.message);
+                            // 从DOM中移除消息
+                            messageElement.style.opacity = '0';
+                            messageElement.style.transform = 'translateY(10px) scale(0.95)';
+                            
+                            setTimeout(() => {
+                                messageElement.remove();
+                                
+                                // 如果没有消息了，显示空状态
+                                const chatContainer = document.querySelector('.space-y-4');
+                                if (chatContainer && chatContainer.children.length === 0) {
+                                    chatContainer.innerHTML = `
+                                        <div class="text-center text-neutral-400 py-6">
+                                            <i class="fa fa-comments-o text-3xl mb-2"></i>
+                                            <p>暂无聊天记录</p>
+                                        </div>
+                                    `;
+                                }
+                            }, 300);
+                        } else {
+                            showToast(data.message, false);
+                        }
+                    })
+                    .catch(error => {
+                        showToast('操作失败，请重试', false);
+                        console.error('Error:', error);
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>    

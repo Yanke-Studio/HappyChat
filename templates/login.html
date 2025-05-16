@@ -1,0 +1,120 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员登录</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC9',
+                        neutral: {
+                            100: '#F5F7FA',
+                            200: '#E5E6EB',
+                            300: '#C9CDD4',
+                            400: '#86909C',
+                            500: '#4E5969',
+                            600: '#272E3B',
+                            700: '#1D2129',
+                        },
+                        danger: '#F53F3F',
+                        success: '#00B42A',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'custom': '0 4px 20px rgba(0, 0, 0, 0.08)',
+                        'hover': '0 8px 30px rgba(0, 0, 0, 0.12)',
+                    }
+                },
+            }
+        }
+    </script>
+</head>
+<body class="font-inter bg-neutral-100 min-h-screen flex flex-col">
+    <!-- 主内容区 -->
+    <main class="flex-grow container mx-auto px-4 py-6 flex items-center justify-center">
+        <div class="w-full max-w-md">
+            <div class="bg-white rounded-xl shadow-custom p-6 md:p-8">
+                <div class="text-center mb-6">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
+                        <i class="fa fa-shield text-2xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-semibold text-neutral-700">管理员登录</h2>
+                    <p class="text-neutral-500 mt-2">请输入您的管理员凭证</p>
+                </div>
+                
+                {% if error %}
+                <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-4">
+                    {{ error }}
+                </div>
+                {% endif %}
+                
+                <form method="POST" class="space-y-4">
+                    <div>
+                        <label for="username" class="block text-neutral-600 mb-2">用户名</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-400">
+                                <i class="fa fa-user"></i>
+                            </span>
+                            <input 
+                                type="text" 
+                                id="username" 
+                                name="username"
+                                class="w-full pl-10 pr-4 py-2 rounded-lg border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200"
+                                placeholder="请输入用户名"
+                                required
+                            >
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="password" class="block text-neutral-600 mb-2">密码</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-400">
+                                <i class="fa fa-lock"></i>
+                            </span>
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password"
+                                class="w-full pl-10 pr-4 py-2 rounded-lg border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200"
+                                placeholder="请输入密码"
+                                required
+                            >
+                        </div>
+                    </div>
+                    
+                    <button 
+                        type="submit" 
+                        class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                    >
+                        <i class="fa fa-sign-in mr-2"></i> 登录
+                    </button>
+                </form>
+                
+                <div class="mt-6 text-center">
+                    <a href="/" class="text-neutral-500 hover:text-primary transition-colors duration-200">
+                        <i class="fa fa-arrow-left mr-1"></i> 返回聊天
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white py-4 border-t border-neutral-200 mt-8">
+        <div class="container mx-auto px-4 text-center text-neutral-500 text-sm">
+            <p>© 2025 乐聊 | 一个基于 Flask 和 SocketIO 的在线聊天系统</p>
+        </div>
+    </footer>
+</body>
+</html>    
